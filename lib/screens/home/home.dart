@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:meuapp/models/shopping.dart';
+import 'file:///C:/Users/emmanoel/FlutterProjects/meuapp/meuapp/lib/screens/shopping/shopping_list.dart';
 import 'package:meuapp/services/auth.dart';
 import 'package:meuapp/services/database.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,8 +15,8 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamProvider<QuerySnapshot>(
-
+    return StreamProvider<List<Shopping>>.value(
+      value: DatabaseService().shoppings,
       child: Scaffold(
         backgroundColor: Colors.indigo[50],
         appBar: AppBar(
@@ -33,8 +33,16 @@ class _HomeState extends State<Home> {
             )
           ],
         ),
+        body: ShoppingList(),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            // Add your onPressed code here!
+          },
+          label: Text('Approve'),
+          icon: Icon(Icons.thumb_up),
+          backgroundColor: Colors.pink,
+        ),
       ),
     );
   }
 }
-

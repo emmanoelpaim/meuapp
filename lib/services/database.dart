@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meuapp/models/shopping.dart';
 
 class DatabaseService {
   final String uid;
@@ -19,8 +20,19 @@ class DatabaseService {
   Firestore.instance.collection('shopping');
 
 
-  Stream<QuerySnapshot> get shoppings{
-    return shoppingCollection.snapshots();
+  // get shopping list snapshot
+  List<Shopping> _shoppingListFromSnapshot(QuerySnapshot snapshot){
+    return snapshot.documents.map((doc) {
+      return Shopping(
+        name: doc.data['name'] ?? '',
+        date: doc.data['date'] ?? ''
+      );
+    }).toList();
+  }
+
+  // get shopping stream
+  Stream<List<Shopping>> get shoppings{
+    return shoppingCollection.snapshots().map(_shoppingListFromSnapshot);
   }
 
 }
