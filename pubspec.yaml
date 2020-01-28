@@ -28,6 +28,7 @@ dependencies:
   provider: ^4.0.2
   flutter_spinkit: ^4.1.1+1
   firebase_core: ^0.4.3+2
+  splashscreen: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -39,7 +40,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
+  assets:
+    - assets/images/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
