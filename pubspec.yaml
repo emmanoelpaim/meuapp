@@ -29,6 +29,7 @@ dependencies:
   flutter_spinkit: ^4.1.1+1
   firebase_core: ^0.4.3+2
   splashscreen: ^1.2.0
+  path_provider: ^1.6.0
 
 dev_dependencies:
   flutter_test:

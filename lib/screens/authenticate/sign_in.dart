@@ -37,73 +37,75 @@ class _SignInState extends State<SignIn> {
                   onPressed: () {
                     widget.toggleView();
                   },
-                  icon: Icon(Icons.person),
+                  icon: Icon(Icons.person_add),
                   label: Text('Registro'),
                 )
               ],
             ),
-            body: Container(
-              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 0.0),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    SizedBox(height: 15.0),
-                    TextFormField(
-                      decoration:
-                          textInputDecoration.copyWith(hintText: 'Email'),
-                      validator: (val) =>
-                          val.isEmpty ? 'Digite um e-mail' : null,
-                      onChanged: (val) {
-                        setState(() => email = val);
-                      },
-                    ),
-                    SizedBox(height: 15.0),
-                    TextFormField(
-                      decoration:
-                          textInputDecoration.copyWith(hintText: 'Senha'),
-                      validator: (val) => val.length < 6
-                          ? 'Entre com uma senha com mais de 6 caractéres'
-                          : null,
-                      obscureText: true,
-                      onChanged: (val) {
-                        setState(() => password = val);
-                      },
-                    ),
-                    SizedBox(height: 15.0),
-                    RaisedButton(
-                      color: Colors.pink[400],
-                      child: Text(
-                        'Entrar',
-                        style: TextStyle(color: Colors.white),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            decoration:
+                                textInputDecoration.copyWith(hintText: 'Email'),
+                            validator: (val) =>
+                                val.isEmpty ? 'Digite um e-mail' : null,
+                            onChanged: (val) {
+                              setState(() => email = val);
+                            },
+                          ),
+                          Divider(),
+                          TextFormField(
+                            decoration:
+                                textInputDecoration.copyWith(hintText: 'Senha'),
+                            validator: (val) => val.length < 6
+                                ? 'Entre com uma senha com mais de 6 caractéres'
+                                : null,
+                            obscureText: true,
+                            onChanged: (val) {
+                              setState(() => password = val);
+                            },
+                          ),
+                          Divider(),
+                          RaisedButton(
+                            color: Colors.pink[400],
+                            child: Text(
+                              'Entrar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onPressed: () async {
+                              if (_formKey.currentState.validate()) {
+                                setState(() => loading = true);
+                                dynamic result =
+                                    await _auth.signInWithEmailAndPassword(
+                                        email, password);
+                                if (result == null) {
+                                  setState(() {
+                                    error = 'Usuário ou senha inválidos';
+                                    loading = false;
+                                  });
+                                }
+                              }
+                            },
+                          ),
+                          Text(
+                            error,
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 14.0,
+                            ),
+                          ),
+                        ],
                       ),
-                      onPressed: () async {
-                        if (_formKey.currentState.validate()) {
-                          setState(() => loading = true);
-                          dynamic result = await _auth
-                              .signInWithEmailAndPassword(email, password);
-                          if (result == null) {
-                            setState(() {
-                              error = 'Usuário ou senha inválidos';
-                              loading = false;
-                            });
-                          }
-                        }
-                      },
                     ),
-                    SizedBox(
-                      height: 10.0,
-                    ),
-                    Text(
-                      error,
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 14.0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ]),
             ),
           );
   }

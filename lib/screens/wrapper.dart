@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:meuapp/models/user.dart';
 import 'package:meuapp/screens/authenticate/authenticate.dart';
 
+import 'shopping/shopping.dart';
+import 'authenticate/authenticate.dart';
 import 'home/home.dart';
 
 class Wrapper extends StatelessWidget {
@@ -12,7 +14,7 @@ class Wrapper extends StatelessWidget {
 
     // return either Home or Authenticate widget
     if (user == null) {
-      return Home();
+      return Authenticate();
     } else {
       return Home();
     }
