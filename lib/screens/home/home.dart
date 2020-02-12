@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:meuapp/models/user.dart';
 import 'package:meuapp/models/buy.dart';
 import 'package:meuapp/services/auth.dart';
@@ -16,9 +17,22 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final AuthService _auth = AuthService();
 
-  final _toDoController = TextEditingController();
+  final _toBuyNameController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
 
-  List _toDoList = [];
+  Future<Null> _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedDate)
+      setState(() {
+        selectedDate = picked;
+      });
+  }
+
+  List _toBuyList = [];
 
   Map<String, dynamic> _lastRemoved;
   int _lastRemovedPos;
@@ -29,17 +43,21 @@ class _HomeState extends State<Home> {
 
     _readData().then((data) {
       setState(() {
-        _toDoList = json.decode(data);
+        _toBuyList = json.decode(data);
       });
     });
   }
 
-  void _addToDo(context) {
+  void _addToBuy(context) {
     setState(() {
-      Map<String, dynamic> newToDo = Map();
-      newToDo["title"] = _toDoController.text;
-      _toDoController.text = "";
-      _toDoList.add(newToDo);
+      Map<String, dynamic> newToBuy = Map();
+      newToBuy["id"] = DateTime.now().millisecondsSinceEpoch.toString();
+      _auth.inputData().then((value) => newToBuy["uid"] = value);
+      newToBuy["name"] = _toBuyNameController.text;
+      newToBuy["date"] = selectedDate.millisecondsSinceEpoch.toString();
+      _toBuyNameController.text = "";
+      selectedDate = DateTime.now();
+      _toBuyList.add(newToBuy);
 
       _saveData();
       Navigator.of(context).pop(Home());
@@ -50,15 +68,13 @@ class _HomeState extends State<Home> {
     await Future.delayed(Duration(seconds: 1));
 
     setState(() {
-      _toDoList.sort((a, b) {
-        if (a["title"] && !b["title"])
+      _toBuyList.sort((a, b) {
+        if (double.parse(a["date"].millisecondsSinceEpoch.toString()) >
+            double.parse(b["date"].millisecondsSinceEpoch.toString()))
           return 1;
-        else if (!a["title"] && b["title"])
-          return -1;
         else
-          return 0;
+          return -1;
       });
-
       _saveData();
     });
 
@@ -82,7 +98,7 @@ class _HomeState extends State<Home> {
                             children: <Widget>[
                               Expanded(
                                   child: TextField(
-                                controller: _toDoController,
+                                controller: _toBuyNameController,
                                 decoration: InputDecoration(
                                     labelText: "Nova Compra",
                                     labelStyle:
@@ -94,11 +110,21 @@ class _HomeState extends State<Home> {
                             children: <Widget>[
                               Expanded(
                                 child: RaisedButton(
+                                  onPressed: () => _selectDate(context),
+                                  child: Icon(Icons.calendar_today),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: RaisedButton(
                                   color: Colors.blueAccent,
                                   child: Text("Salvar"),
                                   textColor: Colors.white,
                                   onPressed: () {
-                                    _addToDo(context);
+                                    _addToBuy(context);
                                   },
                                 ),
                               )
@@ -134,7 +160,7 @@ class _HomeState extends State<Home> {
               onRefresh: _refresh,
               child: ListView.builder(
                   padding: EdgeInsets.only(top: 10.0),
-                  itemCount: _toDoList.length,
+                  itemCount: _toBuyList.length,
                   itemBuilder: buildItem),
             ),
           )
@@ -165,33 +191,46 @@ class _HomeState extends State<Home> {
       direction: DismissDirection.startToEnd,
       child: Card(
         child: ListTile(
-          title: Text(_toDoList[index]["title"]),
+          leading: Icon(Icons.shopping_cart),
+          subtitle: Text(_toBuyList[index]["date"] != null
+              ? DateFormat('dd/MM/yyyy')
+                  .format(DateTime.fromMillisecondsSinceEpoch(
+                      int.parse(_toBuyList[index]["date"])))
+                  .toString()
+              : ''),
+          title: Text(_toBuyList[index]["name"] != null
+              ? _toBuyList[index]["name"]
+              : ''),
           trailing: Icon(Icons.more_vert),
+          isThreeLine: true,
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Shopping(),settings: RouteSettings(
-                arguments: buy.toString(),
-              ), ),
+              MaterialPageRoute(
+                builder: (context) => Shopping(),
+                settings: RouteSettings(
+                  arguments: buy.id,
+                ),
+              ),
             );
           },
         ),
       ),
       onDismissed: (direction) {
         setState(() {
-          _lastRemoved = Map.from(_toDoList[index]);
+          _lastRemoved = Map.from(_toBuyList[index]);
           _lastRemovedPos = index;
-          _toDoList.removeAt(index);
+          _toBuyList.removeAt(index);
 
           _saveData();
 
           final snack = SnackBar(
-            content: Text("Tarefa \"${_lastRemoved["title"]}\" removida!"),
+            content: Text("Compra \"${_lastRemoved["name"]}\" removida!"),
             action: SnackBarAction(
                 label: "Desfazer",
                 onPressed: () {
                   setState(() {
-                    _toDoList.insert(_lastRemovedPos, _lastRemoved);
+                    _toBuyList.insert(_lastRemovedPos, _lastRemoved);
                     _saveData();
                   });
                 }),
@@ -211,7 +250,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<File> _saveData() async {
-    String data = json.encode(_toDoList);
+    String data = json.encode(_toBuyList);
 
     final file = await _getFile();
     return file.writeAsString(data);

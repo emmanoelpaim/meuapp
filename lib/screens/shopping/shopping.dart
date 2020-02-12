@@ -115,19 +115,21 @@ class _ShoppingState extends State<Shopping> {
         ),
       ),
       direction: DismissDirection.startToEnd,
-      child: CheckboxListTile(
-        title: Text(_toDoList[index]["title"]),
-        value: _toDoList[index]["ok"],
-        secondary: CircleAvatar(
-          child: Icon(_toDoList[index]["ok"] ?
-          Icons.check : Icons.error),),
-        onChanged: (c){
-          setState(() {
-            _toDoList[index]["ok"] = c;
-            _saveData();
-          });
-        },
-      ),
+      child:
+//      CheckboxListTile(
+//        title: Text(_toDoList[index]["title"]),
+//        value: _toDoList[index]["ok"],
+//        secondary: CircleAvatar(
+//          child: Icon(_toDoList[index]["ok"] ?
+//          Icons.check : Icons.error),),
+//        onChanged: (c){
+//          setState(() {
+//            _toDoList[index]["ok"] = c;
+//            _saveData();
+//          });
+//        },
+//      )
+      Text('s'),
       onDismissed: (direction){
         setState(() {
           _lastRemoved = Map.from(_toDoList[index]);
@@ -170,6 +172,7 @@ class _ShoppingState extends State<Shopping> {
 
   Future<String> _readData() async {
     try {
+
       final file = await _getFile();
 
       return file.readAsString();
